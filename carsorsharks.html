@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Road vs Shark Fatalities</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    padding: 20px;
+  }
+  h1, h2, h3 {
+    text-align: center;
+  }
+  .controls {
+    text-align: center;
+    margin-top: 10px;
+  }
+  .bar-container {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    background: #ddd;
+    border-radius: 10px;
+    height: 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    font-weight: bold;
+    color: white;
+    transition: width 0.2s linear;
+  }
+  .road {
+    background: #0077cc;
+  }
+  .shark {
+    background: #cc3300;
+  }
+  .time-box {
+    margin-left: 10px;
+    min-width: 250px;
+  }
+</style>
+</head>
+<body>
+<h1>Global Fatalities: Road vs Shark Attacks</h1>
+
+<div class="bar-container">
+  <div id="roadBar" class="bar road" style="width: 0%">🚗</div>
+  <div id="roadTime" class="time-box"></div>
+</div>
+
+<div class="bar-container">
+  <div id="sharkBar" class="bar shark" style="width: 0%">🦈</div>
+  <div id="sharkTime" class="time-box"></div>
+</div>
+
+<h2 id="startTime"></h2>
+<h3 id="deathCounts"></h3>
+<div class="controls">
+  <button onclick="restartTimers()">Restart</button>
+</div>
+
+<script>
+  const roadInterval = 26; // seconds per road death
+  const sharkInterval = 2073600; // ~2.1 years in seconds
+
+  let roadTimer = roadInterval;
+  let sharkTimer = sharkInterval;
+  let roadPercent = 0;
+  let roadDeaths = 0;
+  let sharkDeaths = 0;
+
+  function setStartTime() {
+    const now = new Date();
+    const formatted = now.getFullYear() + '-' +
+      String(now.getMonth()+1).padStart(2,'0') + '-' +
+      String(now.getDate()).padStart(2,'0') + ' ' +
+      String(now.getHours()).padStart(2,'0') + ':' +
+      String(now.getMinutes()).padStart(2,'0') + ':' +
+      String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('startTime').textContent = `Time started: ${formatted}`;
+  }
+
+  function updateDeathCounts() {
+    document.getElementById('deathCounts').textContent = `Deaths since timer started: Cars: ${roadDeaths}. Sharks: ${sharkDeaths}`;
+  }
+
+  function formatSharkTime(sec) {
+    return `${sec.toLocaleString()}s (~2.1 years)`;
+  }
+
+  function formatRoadTime(sec) {
+    return `${sec.toLocaleString()}s`;
+  }
+
+  function updateBars() {
+    // Road
+    roadTimer -= 1;
+    document.getElementById('roadTime').textContent = `Time til next death: ${formatRoadTime(roadTimer)}`;
+    if (roadTimer <= 0) {
+      roadPercent += 5; // increment by 5% width per death
+      if (roadPercent > 100) roadPercent = 100;
+      document.getElementById('roadBar').style.width = roadPercent + '%';
+      roadTimer = roadInterval;
+      roadDeaths++;
+    }
+
+    // Shark
+    sharkTimer -= 1;
+    const sharkPercent = ((sharkInterval - sharkTimer) / sharkInterval) * 100;
+    document.getElementById('sharkBar').style.width = sharkPercent + '%';
+    document.getElementById('sharkTime').textContent = `Time til next death: ${formatSharkTime(sharkTimer)}`;
+    if (sharkTimer <= 0) {
+      document.getElementById('sharkBar').style.width = '0%';
+      sharkTimer = sharkInterval;
+      sharkDeaths++;
+    }
+
+    updateDeathCounts();
+  }
+
+  function restartTimers() {
+    roadTimer = roadInterval;
+    sharkTimer = sharkInterval;
+    roadPercent = 0;
+    roadDeaths = 0;
+    sharkDeaths = 0;
+    document.getElementById('roadBar').style.width = '0%';
+    document.getElementById('sharkBar').style.width = '0%';
+    setStartTime();
+    updateDeathCounts();
+  }
+
+  setInterval(updateBars, 1000);
+  setStartTime();
+  updateDeathCounts();
+  updateBars();
+</script>
+</body>
+</html>
